@@ -6,11 +6,11 @@
         xmlns:vm="clr-namespace:StandardValidator.ViewModel"
         mc:Ignorable="d"
         Title="标准有效性验证器" Height="450" Width="800" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
-    
+
     <Window.DataContext>
         <vm:ViewModelMain />
     </Window.DataContext>
-    
+
     <Border Padding="5">
         <Grid>
             <Grid.RowDefinitions>
@@ -29,13 +29,13 @@
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="序  号" Width="35" DisplayMemberBinding="{Binding ID}"/>
-                        <GridViewColumn Header="当前标准" Width="310" DisplayMemberBinding="{Binding CurrentStandard}"/>
-                        <GridViewColumn Header="替代标准"  Width="310" DisplayMemberBinding="{Binding LatestStandard}"/>
-                        <GridViewColumn Header="备  注"  Width="100" DisplayMemberBinding="{Binding Note}"/>
+                        <GridViewColumn Header="标准号" Width="110" DisplayMemberBinding="{Binding CurrentStandardNumber}"/>
+                        <GridViewColumn Header="标准名称" Width="260" DisplayMemberBinding="{Binding CurrentStandardName}"/>
+                        <GridViewColumn Header="替代标准"  Width="250" DisplayMemberBinding="{Binding LatestStandardNumber}"/>
+                        <GridViewColumn Header="状  态"  Width="100" DisplayMemberBinding="{Binding State}"/>
                     </GridView>
                 </ListView.View>
             </ListView>
-
         </Grid>
     </Border>
 </Window>
