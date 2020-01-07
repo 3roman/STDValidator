@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using ClosedXML.Excel;
 
 namespace StandardValidator.Utility
 {
@@ -35,12 +37,6 @@ namespace StandardValidator.Utility
             return Regex.Match(rawString, pattern).Groups[groupIndex].Value;
         }
 
-        /// <summary>
-        /// <summary>
-        /// 字符串转Unicode
-        /// </summary>
-        /// <param name="source">源字符串</param>
-        /// <returns>Unicode编码后的字符串</returns>
         public static string String2Unicode(string source)
         {
             var bytes = Encoding.Unicode.GetBytes(source);
@@ -53,15 +49,51 @@ namespace StandardValidator.Utility
             return stringBuilder.ToString();
         }
 
-        /// <summary>
-        /// Unicode转字符串
-        /// </summary>
-        /// <param name="source">经过Unicode编码的字符串</param>
-        /// <returns>正常字符串</returns>
         public static string Unicode2String(string source)
         {
             return new Regex(@"\\u([0-9A-F]{4})", RegexOptions.IgnoreCase | RegexOptions.Compiled).Replace(
                          source, x => string.Empty + Convert.ToChar(Convert.ToUInt16(x.Result("$1"), 16)));
+        }
+
+        public static DataTable List2DataTable<T>(List<T> objects)
+        {
+            //取出第一个实体的所有Propertie
+            var entityType = objects[0].GetType();
+            var entityProperties = entityType.GetProperties();
+
+            //生成DataTable的structure
+            //生产代码中，应将生成的DataTable结构Cache起来，此处略
+            var dt = new DataTable();
+            for (var i = 0; i < entityProperties.Length; i++)
+            {
+                dt.Columns.Add(entityProperties[i].Name);
+            }
+            //将所有entity添加到DataTable中
+            foreach (var entity in objects)
+            {
+                //检查所有的的实体都为同一类型
+                if (entity.GetType() != entityType)
+                {
+                    throw new Exception("type error");
+                }
+                var entityValues = new object[entityProperties.Length];
+                for (var i = 0; i < entityProperties.Length; i++)
+                {
+                    entityValues[i] = entityProperties[i].GetValue(entity, null);
+                }
+                dt.Rows.Add(entityValues);
+            }
+
+            return dt;
+        }
+
+        public static void DataTable2Excel(this DataTable dt, string filename)
+        {
+            var wb = new XLWorkbook();
+            wb.Worksheets.Add(dt, "Sheet1");
+            wb.SaveAs(filename);
+
+            return;
         }
     }
 }

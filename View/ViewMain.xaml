@@ -24,6 +24,7 @@
             </Grid.ColumnDefinitions>
             <Button Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Content=" 浏览文件夹 " Command="{Binding CommandBrowse}" />
             <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Content=" 验证有效性 " Command="{Binding CommandValidate}" />
+            <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" Content=" 导出Excel " Command="{Binding CommandExport}" />
 
             <ListView ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Row="0" Grid.ColumnSpan="3" Margin="0 2 " ItemsSource="{Binding Standards}">
                 <ListView.View>

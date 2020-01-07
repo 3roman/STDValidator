@@ -419,7 +419,6 @@ namespace StandardValidator.Utility
             hd.LoadHtml(html);
 
             return hd.DocumentNode.SelectSingleNode(xPath);
-
         }
     }
 }
