@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandardValidator", "StandardValidator.csproj", "{1D4108E6-A23D-4963-86BF-CA1DD2DC7910}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STDValidator", "STDValidator.csproj", "{1D4108E6-A23D-4963-86BF-CA1DD2DC7910}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

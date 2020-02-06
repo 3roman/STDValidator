@@ -1,5 +1,5 @@
-﻿using StandardValidator.Model;
-using StandardValidator.Utility;
+﻿using STDValidator.Model;
+using STDValidator.Utility;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace StandardValidator.ViewModel
+namespace STDValidator.ViewModel
 {
     class ViewModelMain : INotifyPropertyChanged
     {

@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace StandardValidator
+namespace STDValidator
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑

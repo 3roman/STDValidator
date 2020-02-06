@@ -7,11 +7,11 @@ using System.Windows;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("StandardValidator")]
+[assembly: AssemblyTitle("STDValidator")]
 [assembly: AssemblyDescription("在线检查标准是否过期")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("FreeWare")]
-[assembly: AssemblyProduct("StandardValidator")]
+[assembly: AssemblyProduct("STDValidator")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

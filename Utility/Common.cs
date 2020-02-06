@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ClosedXML.Excel;
 
-namespace StandardValidator.Utility
+namespace STDValidator.Utility
 {
     public static class Common
     {

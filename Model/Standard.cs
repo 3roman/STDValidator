@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace StandardValidator.Model
+namespace STDValidator.Model
 {
     class MyStandard: INotifyPropertyChanged
     {

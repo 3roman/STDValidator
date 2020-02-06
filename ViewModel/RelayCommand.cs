@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace StandardValidator.ViewModel
+namespace STDValidator.ViewModel
 {
     public class RelayCommand : ICommand
     {

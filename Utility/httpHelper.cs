@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 using System.Collections;
 using HtmlAgilityPack;
 
-namespace StandardValidator.Utility
+namespace STDValidator.Utility
 {
     public class HttpHelper
     {
