@@ -79,7 +79,8 @@ namespace STDValidator.ViewModel
 
         public void ValidateMethod(MyStandard standard)
         {
-            var content = HttpHelper.GetHttpContent($"http://www.csres.com/s.jsp?keyword={standard.CurrentStandardNumber}&pageNum=1");
+            var currentStandardNumber = standard.CurrentStandardNumber.ToUpper().Replace("T", "");
+            var content = HttpHelper.GetHttpContent($"http://www.csres.com/s.jsp?keyword={currentStandardNumber}&pageNum=1");
             if (content.Contains("没有找到"))
             {
                 standard.State = "未找到";
