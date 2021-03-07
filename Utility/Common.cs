@@ -17,17 +17,20 @@ namespace STDValidator.Utility
             return Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories);
         }
 
-        public static string GetDirectory()
+        public static string GetDirectory(string initialDirectory="")
         {
             var path = string.Empty;
             var fbd = new FolderBrowserDialog
             {
-                Description = "请选择标准规范所在目录"
+                Description = @"请选择标准规范所在目录",
+                SelectedPath = initialDirectory
+
             };
             if (DialogResult.OK == fbd.ShowDialog())
             {
                 path = fbd.SelectedPath;
             }
+
 
             return path;
         }
@@ -92,8 +95,6 @@ namespace STDValidator.Utility
             var wb = new XLWorkbook();
             wb.Worksheets.Add(dt, "Sheet1");
             wb.SaveAs(filename);
-
-            return;
         }
     }
 }

@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace STDValidator.ViewModel
 {
-    class ViewModelMain : INotifyPropertyChanged
+    internal class ViewModelMain : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -19,7 +19,9 @@ namespace STDValidator.ViewModel
         public RelayCommand CommandBrowse { get; }
         public RelayCommand CommandValidate { get; }
         public RelayCommand CommandExport { get; }
-        private List<Task> tasks = new List<Task>();
+        private readonly List<Task> _tasks = new List<Task>();
+
+        private string _standardDirectory;
 
         public ViewModelMain()
         {
@@ -31,8 +33,8 @@ namespace STDValidator.ViewModel
 
         private void Browse(object parameter)
         {
-            var DirectoryPath = Common.GetDirectory();
-            var files = Common.GetAllFiles(DirectoryPath).ToList<string>();
+            _standardDirectory = Common.GetDirectory(_standardDirectory);
+            var files = Common.GetAllFiles(_standardDirectory).ToList();
             Standards.Clear();
             foreach (var file in files)
             {
@@ -55,9 +57,9 @@ namespace STDValidator.ViewModel
 
         private bool CanValidate(object parameter)
         {
-            if (tasks.Count > 0)
+            if (_tasks.Count > 0)
             {
-                foreach (var item in tasks)
+                foreach (var item in _tasks)
                 {
                     if (!item.IsCompleted)
                     {
@@ -73,7 +75,7 @@ namespace STDValidator.ViewModel
         {
             foreach (var standard in Standards)
             {
-                tasks.Add(Task.Factory.StartNew(() => ValidateMethod(standard)));
+                _tasks.Add(Task.Factory.StartNew(() => ValidateMethod(standard)));
             }
         }
 
