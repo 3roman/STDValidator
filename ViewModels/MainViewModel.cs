@@ -15,7 +15,7 @@ namespace STDValidator.ViewModels
 
         public void Browse()
         {
-            
+
             // 浏览文件
             var files = Common.BrowseFiles().Select(x => Path.GetFileNameWithoutExtension(x));
 
@@ -25,7 +25,7 @@ namespace STDValidator.ViewModels
             {
                 var codeNumber = Common.ParseString(file,
                      @"^(\w+[\u3000\u0020]+\d+\.?\d+-\d+)[\u3000\u0020]+", 1);
-                if (string.Empty == codeNumber)
+                if (string.IsNullOrEmpty(codeNumber))
                 {
                     continue;
                 }
@@ -55,7 +55,7 @@ namespace STDValidator.ViewModels
             if (content.Contains("没有找到"))
             {
                 code.Effectiveness = "未找到";
-                
+
                 return;
             }
             code.Effectiveness = HttpHelper.GetContentByXPath(content, "//td[5]/font").InnerHtml;
@@ -68,7 +68,6 @@ namespace STDValidator.ViewModels
                 var pattern = @"[\u88ab].*(" + prefix + @"/?T?.+-\d{4}).*[\u4ee3][\u66ff]";
                 code.LatestCodeNumber = Common.ParseString(content, pattern, 1);
             }
-            //Debug.WriteLine(code.Effectiveness);
         }
     }
 }
