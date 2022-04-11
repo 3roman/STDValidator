@@ -1,30 +1,31 @@
 ﻿using STDValidator.Models;
-using STDValidator.Utility;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Stylet;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.Windows.Forms;
+using System.Threading.Tasks;
+using System.Threading;
+
 
 namespace STDValidator.ViewModels
 {
-    public class MainViewModel : Screen
+    public class MainViewModel : Stylet.Screen
     {
         public BindableCollection<Code> Codes { get; set; } = new BindableCollection<Code>();
-        private readonly List<Task> _tasks = new List<Task>();
+        public string ScanState { get; set; } = "未扫描";
+        public bool CanOnlineValidate { get; set; } = true;
+        public long Scanned  = 0;
 
         public void Browse()
         {
-
-            // 浏览文件
-            var files = Common.BrowseFiles().Select(x => Path.GetFileNameWithoutExtension(x));
-
-            // 提取文件名
             Codes.Clear();
+            var files = BrowseFiles().Select(x => Path.GetFileNameWithoutExtension(x));
             foreach (var file in files)
             {
-                var codeNumber = Common.ParseString(file,
-                     @"^(\w+[\u3000\u0020]+\d+\.?\d+-\d+)[\u3000\u0020]+", 1);
+                var codeNumber = Regex.Match(file, @"^(\w+[\u3000\u0020]+\d+\.?\d+-\d+)[\u3000\u0020]+").Groups[1].Value;
                 if (string.IsNullOrEmpty(codeNumber))
                 {
                     continue;
@@ -36,38 +37,70 @@ namespace STDValidator.ViewModels
                     CodeNumber = codeNumber.ToUpper()
                 });
             }
+
+            ScanState = $"待命中：{Scanned}/{Codes.Count}";
         }
 
-        public bool CanOnlineValidate => 0 == _tasks.Count;
 
         public void OnlineValidate()
         {
-            foreach (var code in Codes)
+            // 套一层Task，防止UI线程阻塞
+            Task.Run(() =>
             {
-                _tasks.Add(Task.Factory.StartNew(() => ValidateMethod(code)));
-            }
+                CanOnlineValidate = false;
+                Scanned = 0;
+                Parallel.ForEach(Codes, new ParallelOptions() { MaxDegreeOfParallelism = 10 }, Code =>
+                {
+                    Validate(Code);
+                    Interlocked.Increment(ref Scanned);
+                    ScanState = $"扫描中：{Scanned}/{Codes.Count}";
+                });
+                ScanState = $"扫描结束：{Scanned}/{Codes.Count}";
+                CanOnlineValidate = true;
+            });
+            
         }
 
-        private void ValidateMethod(Code code)
+        private void Validate(Code code)
         {
-            var number = code.CodeNumber.ToUpper().Replace("T", "");
-            var content = HttpHelper.GetHttpContent($"http://www.csres.com/s.jsp?keyword={number}&pageNum=1");
+            var number = Regex.Replace(code.CodeNumber, @"[tT]", "");
+            string content;
+            using (var client = new WebClient())
+            {
+                content = client.DownloadString($"http://www.csres.com/s.jsp?keyword={number}&pageNum=1");
+            }
             if (content.Contains("没有找到"))
             {
                 code.Effectiveness = "未找到";
 
                 return;
             }
-            code.Effectiveness = HttpHelper.GetContentByXPath(content, "//td[5]/font").InnerHtml;
-            if (!code.Effectiveness.Contains("现行"))
+            if (!content.Contains(@"现行</font></td>"))
             {
-                var link = HttpHelper.GetContentByXPath(content, "//table/thead/tr[2]/td[1]/a").Attributes["href"].Value;
-                content = HttpHelper.GetHttpContent($"http://www.csres.com{link}");
-                content = content.Replace("替代", "代替");
-                var prefix = Common.ParseString(code.CodeNumber, "([A-Z]+).*", 1).Replace("T", "");
-                var pattern = @"[\u88ab].*(" + prefix + @"/?T?.+-\d{4}).*[\u4ee3][\u66ff]";
-                code.LatestCodeNumber = Common.ParseString(content, pattern, 1);
+                code.Effectiveness = "作废";
+                var link = Regex.Match(content, @"/detail/.+html").Value;
+                using (var client = new WebClient())
+                {
+                    content = client.DownloadString($"http://www.csres.com{link}");
+                }
+                code.LatestCodeNumber = Regex.Match(content, @"被.+blank>(.+)</a>代替").Groups[1].Value;
             }
+            else
+            {
+                code.Effectiveness = "现行";
+            }
+        }
+
+        public static IEnumerable<string> BrowseFiles()
+        {
+            IEnumerable<string> files = null;
+            var fbd = new FolderBrowserDialog();
+            if (DialogResult.OK == fbd.ShowDialog())
+            {
+                files = Directory.EnumerateFiles(fbd.SelectedPath, "*", SearchOption.AllDirectories);
+            }
+
+            return files;
         }
     }
 }
