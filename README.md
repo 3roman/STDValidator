@@ -1,15 +1,8 @@
-<<<<<<< HEAD
-
 <div align="center"><img src="./STDValidator.ico" /></div>
 
 <div align="center">
     <h2 >STDValidator</h2>
 </div>
-=======
-<img align="center" src="./STDValidator.ico">
-
-<h2 align="center">STDValidator</h2>
->>>>>>> 53bb589c6b1ef581803fece51d386001cd6e5750
 
 <center><b>我们不生产水，我们只是大自然的搬运工。</b></center>
 
