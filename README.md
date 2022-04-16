@@ -4,7 +4,7 @@
     <h2 >STDValidator</h2>
 </div>
 
-<center><b>我们不生产水，我们只是大自然的搬运工。</b></center>
+<div align="center"><b>我们不生产水，我们只是大自然的搬运工。</b></div>
 
 ![version](https://img.shields.io/badge/STDValidator-v1.1.1-orange)![build](https://img.shields.io/badge/build-passing-orange)![licence](https://img.shields.io/badge/Licence-MIT-orange)![GitHub Repo stars](https://img.shields.io/github/stars/3roman/stdvalidator)
 
