@@ -5,55 +5,48 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:s="https://github.com/canton7/Stylet"
-    Title="标准规范有效性验证工具202204      【hangch出品】"
+    Title="标准规范有效性验证工具202204   小知识：没想象中快是因为CPU内核不够多，神仙也没辙^_^                          【hangch荣誉出品】"
     Width="800"
     Height="450"
-    ResizeMode="NoResize"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
 
     <Border Padding="5,5,5,2" FocusManager.FocusedElement="{Binding ElementName=txtKeyWord}">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
-                <RowDefinition />
-                <RowDefinition Height="auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5*" />
-                <ColumnDefinition Width="55*" />
-                <ColumnDefinition Width="8*" />
-                <ColumnDefinition Width="8*" />
-                <ColumnDefinition Width="8*" />
-                <ColumnDefinition Width="8*" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Text="标准号" />
-            <TextBox
-                x:Name="txtKeyWord"
-                Grid.Column="1"
-                Text="{Binding KeyWord, UpdateSourceTrigger=PropertyChanged}" />
-            <Button
-                Grid.Column="2"
-                Margin="2,0"
-                Command="{s:Action OnAdd}"
-                Content="手动增加"
-                IsDefault="True" />
-            <Button
-                Grid.Column="3"
-                Margin="1,0"
-                Command="{s:Action OnBrowse}"
-                Content="浏览目录" />
-            <Button
-                Grid.Column="4"
-                Margin="1,0"
-                Command="{s:Action OnClear}"
-                Content="清空列表" />
-            <Button
-                Grid.Column="5"
-                Margin="1,0,0,0"
-                Command="{s:Action OnValidate}"
-                Content="在线验证" />
+        <DockPanel>
+            <DockPanel DockPanel.Dock="Top">
+                <TextBlock
+                    Margin="0,0,5,0"
+                    VerticalAlignment="Center"
+                    DockPanel.Dock="Left"
+                    Text="标准号" />
+                <Button
+                    Margin="1.5,0,0,0"
+                    Command="{s:Action OnValidate}"
+                    Content="在线验证"
+                    DockPanel.Dock="Right" />
+                <Button
+                    Margin="1.5,0,0,0"
+                    Command="{s:Action OnClear}"
+                    Content="清空列表"
+                    DockPanel.Dock="Right" />
+                <Button
+                    Margin="1.5,0,0,0"
+                    Command="{s:Action OnAdd}"
+                    Content="手动增加"
+                    DockPanel.Dock="Right"
+                    IsDefault="True" />
+                <TextBox
+                    x:Name="txtKeyWord"
+                    DockPanel.Dock="Left"
+                    Text="{Binding KeyWord, UpdateSourceTrigger=PropertyChanged}" />
+            </DockPanel>
+            <TextBlock
+                DockPanel.Dock="Bottom"
+                Foreground="Red"
+                Text="{Binding StateMessage}"
+                TextAlignment="Right" />
             <ListView
+                x:Name="lvwMain"
                 Grid.Row="1"
                 Grid.ColumnSpan="6"
                 Margin="0,3"
@@ -67,8 +60,10 @@
                 </ListView.Resources>
                 <ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Click="{s:Action OnMenuCopyNumber}" Header="复制标准号" />
-                        <MenuItem Click="{s:Action OnMenuCopyName}" Header="复制标准名" />
+                        <MenuItem Click="{s:Action OnMenuCopyNumber}" Header="复制最新标准号" />
+                        <MenuItem Click="{s:Action OnMenuCopyName}" Header="复制最新标准名" />
+                        <Separator />
+                        <MenuItem Click="{s:Action OnMenuBrowse}" Header="浏览标准目录" />
                         <Separator />
                         <MenuItem Click="{s:Action OnMenuImportFromExcel}" Header="导入Excel" />
                         <MenuItem Click="{s:Action OnMenuExportToExcel}" Header="导出Excel" />
@@ -77,16 +72,15 @@
                 <ListView.View>
                     <GridView>
                         <GridViewColumn
-                            Width="200"
+                            Width="190"
                             DisplayMemberBinding="{Binding Number}"
                             Header="标准号" />
                         <GridViewColumn
                             Width="260"
                             DisplayMemberBinding="{Binding Name}"
                             Header="标准名" />
-
                         <GridViewColumn
-                            Width="200"
+                            Width="190"
                             DisplayMemberBinding="{Binding LatestNumber}"
                             Header="替代标准号" />
                         <GridViewColumn
@@ -96,13 +90,7 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <TextBlock
-                Grid.Row="2"
-                Grid.Column="4"
-                Grid.ColumnSpan="2"
-                HorizontalAlignment="Right"
-                Foreground="Red"
-                Text="{Binding StateMessage}" />
-        </Grid>
+        </DockPanel>
     </Border>
+
 </Window>

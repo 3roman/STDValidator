@@ -30,10 +30,11 @@ namespace STDValidator.Models
 
         protected virtual string UnitizeCodeNumber(string codeNumber)
         {
-            var number  = codeNumber.Replace("／", string.Empty); // 替换全角斜杠
+            var number  = Regex.Replace(codeNumber, "[/／]", string.Empty); // 替换全角半角斜杠
             number      = number.Replace("_", "-"); // 替换下划线
-            number      = Regex.Replace(number, "[\u3000\u0020]{1,}", " "); // 替换两个以上中文或英文空格为一个英文空格
+            number      = Regex.Replace(number, @"(\s|\u3000)+", " "); // 替换两个以上中文或英文空格为一个英文空格
             number      = number.ToUpper().Trim(); // 转大写
+            number = Regex.Replace(number, "[(（].+[)）]", string.Empty); // 去除“2018复审”这类字样
 
             return number;
         }
