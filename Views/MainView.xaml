@@ -60,8 +60,8 @@
                 </ListView.Resources>
                 <ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Click="{s:Action OnMenuCopyNumber}" Header="复制最新标准号" />
-                        <MenuItem Click="{s:Action OnMenuCopyName}" Header="复制最新标准名" />
+                        <MenuItem Click="{s:Action OnMenuCopyLatestNumber}" Header="复制最新标准号" />
+                        <MenuItem Click="{s:Action OnMenuCopyLatestName}" Header="复制最新标准名" />
                         <Separator />
                         <MenuItem Click="{s:Action OnMenuBrowse}" Header="浏览标准目录" />
                         <Separator />
@@ -72,17 +72,21 @@
                 <ListView.View>
                     <GridView>
                         <GridViewColumn
-                            Width="190"
+                            Width="130"
                             DisplayMemberBinding="{Binding Number}"
                             Header="标准号" />
                         <GridViewColumn
-                            Width="260"
+                            Width="200"
                             DisplayMemberBinding="{Binding Name}"
                             Header="标准名" />
                         <GridViewColumn
-                            Width="190"
+                            Width="130"
                             DisplayMemberBinding="{Binding LatestNumber}"
-                            Header="替代标准号" />
+                            Header="最新标准号" />
+                        <GridViewColumn
+                            Width="200"
+                            DisplayMemberBinding="{Binding LatestName}"
+                            Header="最新标准名" />
                         <GridViewColumn
                             Width="100"
                             DisplayMemberBinding="{Binding State}"

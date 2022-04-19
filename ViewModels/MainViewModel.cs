@@ -1,4 +1,5 @@
-﻿using MiniExcelLibs;
+﻿using AngleSharp.Html.Parser;
+using MiniExcelLibs;
 using STDValidator.Models;
 using STDValidator.Utility;
 using Stylet;
@@ -18,9 +19,8 @@ namespace STDValidator.ViewModels
         public BindableCollection<CodeEx> Codes { get; set; } = new BindableCollection<CodeEx>();
         public CodeEx SelectedCode { get; set; }
         public string StateMessage { get; set; } = "未扫描";
-        public string KeyWord { get; set; }
+        public string KeyWord { get; set; } = "DL/T5054-1996";
         private long Scanned;
-        private bool isReachedDailyCount;
         public bool CanOnValidate { get; set; }
         private readonly IWindowManager _windowsManager;
 
@@ -30,25 +30,36 @@ namespace STDValidator.ViewModels
             _windowsManager = windowManager;
         }
 
-        public void OnMenuCopyNumber()
+        public void OnMenuCopyLatestNumber()
         {
             if (SelectedCode == null)
             {
                 return;
             }
-
-            var content = string.IsNullOrEmpty(SelectedCode.LatestNumber) ? SelectedCode.Number : SelectedCode.LatestNumber;
-            System.Windows.Clipboard.SetText(content);
+            if (SelectedCode.State == CodeState.Valid)
+            {
+                System.Windows.Clipboard.SetText(SelectedCode.Number);
+            }
+            else
+            {
+                System.Windows.Clipboard.SetText(SelectedCode.LatestNumber);
+            }
         }
 
-        public void OnMenuCopyName()
+        public void OnMenuCopyLatestName()
         {
             if (SelectedCode == null)
             {
                 return;
             }
-
-            System.Windows.Clipboard.SetText(SelectedCode.Name);
+            if (SelectedCode.State == CodeState.Valid)
+            {
+                System.Windows.Clipboard.SetText(SelectedCode.Name);
+            }
+            else
+            {
+                System.Windows.Clipboard.SetText(SelectedCode.LatestName);
+            }
         }
 
         public void OnMenuBrowse()
@@ -113,7 +124,7 @@ namespace STDValidator.ViewModels
             };
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                using(var sr = File.Create(sfd.FileName))
+                using (var sr = File.Create(sfd.FileName))
                 {
                     sr.SaveAs(Codes);
                 }
@@ -165,10 +176,6 @@ namespace STDValidator.ViewModels
 
                 Parallel.ForEach(Codes, new ParallelOptions() { MaxDegreeOfParallelism = 10 }, Code =>
                 {
-                    if (isReachedDailyCount)
-                    {
-                        return;
-                    }
                     ValidateWorker(Code);
 
                     Interlocked.Increment(ref Scanned);
@@ -178,140 +185,79 @@ namespace STDValidator.ViewModels
                 StateMessage = $"验证结束：{Scanned}/{Codes.Count}";
                 CanOnValidate = Codes.Count > 0;
             });
-           
+
         }
 
         private void ValidateWorker(CodeEx code)
         {
-            if (isReachedDailyCount)
-            {
-                return;
-            }
-
-            // 查询必须把T替换掉，否则有些查不到
-            var number = code.Number;
-            if (number.Contains("T"))
-            {
-                number = number.Replace("T", string.Empty);
-            }
+            // 查询必须把T/替换掉，否则有些查不到
+            var number = code.Number.Replace("T", string.Empty).Replace("/", string.Empty);
+            var content = Common.GetData($"http://www.csres.com/s.jsp?keyword={number}&pageNum=1");
+            //Debugger.Log(1, "", $"{number}\n");
 
             // 每日次数限制检查
-            var content = Common.GetData($"http://www.csres.com/s.jsp?keyword={number}&pageNum=1");
-            Debugger.Log(1, "", $"{number}\n");
             if (content.Contains("已经超出我们允许的范围"))
             {
                 KeyWord = "啊哦，超出了网站每天允许的查询次数，明天再试吧！！！";
-                isReachedDailyCount = true;
             }
 
-            // 标准号不带年号
-            if (!number.Contains("-"))
-            {
-                DealWithIncompletedCodeNumber(code, content);
-
-                return;
-            }
-
-            // 没有找到
-            if (content.Contains("没有找到"))
+            var parser = new HtmlParser();
+            var document = parser.ParseDocument(content);
+            var results = document.QuerySelectorAll("thead.th1 font[color$=\"0000\"]");
+            // 未找到
+            if (results.Length == 0)
             {
                 code.State = CodeState.NotFound;
                 code.TextColor = Brushes.Blue;
 
                 return;
             }
-
-            if (Regex.Matches(content, "废止").Count >= 3)
+            // 有效标准
+            results = document.QuerySelectorAll("thead.th1 font[color=\"#000000\"]");
+            if (results.Length == 5)
             {
-                code.State = CodeState.NotFound;
-                code.TextColor = Brushes.Blue;
-
-                return;
-            }
-
-            if (Regex.Matches(content, "现行").Count >= 3)
-            {
-                var matches = Regex.Matches(content, "<font color=\"#000000\">(.+)</font>");
-                code.Number = matches[0].Groups[1].Value;
-                code.Name = matches[1].Groups[1].Value;
                 code.State = CodeState.Valid;
-                code.TextColor = Brushes.ForestGreen;
+                code.TextColor = Brushes.Green;
+                code.Number = results[0].TextContent;
+                code.Name = results[1].TextContent;
 
                 return;
             }
-
-            if (Regex.Matches(content, "作废").Count >= 3)
+            // 废止
+            results = document.QuerySelectorAll("thead.th1 font[color=\"#FF0000\"]");
+            if (results.Length == 5)
             {
                 code.State = CodeState.Expired;
                 code.TextColor = Brushes.Red;
-                var newLink = Regex.Match(content, @"/detail/.+html").Value;
-                content = Common.GetData($"http://www.csres.com/{newLink}");
-                // 替代标准有链接
-                var matches = Regex.Matches(content, "被.+(/detail/.+html).+blank>(.+)</a>[代替]{2}");
-                if (matches.Count == 0)
+                var result = document.QuerySelector("thead.th1 a").GetAttribute("href");
+                content = Common.GetData($"http://www.csres.com/{result}");
+                // 有新标准链接信息
+                //var match = Regex.Match(content, "被.+(/detail/.+html).+blank>(.+)</a>(替代|代替){1}");
+                var match = Regex.Match(content, "(被.+blank>|被){1}(.+?)(?=</a>|替代|代替)");
+                if (match != null && match.Groups.Count == 3)
                 {
-                    code.LatestNumber = "***查找失败，请手动验证！***";
-                }
-                else
-                {
-                    code.LatestNumber = matches[0].Groups[2].Value;
-                    newLink = matches[0].Groups[1].Value;
-                    content = Common.GetData($"http://www.csres.com/{newLink}");
-                    // 链接到的还是过期标准
-                    if (Regex.Matches(content, "现行").Count >= 1)
-                    {
-                        code.Name = Regex.Match(content, @"h3>(.+)<a").Groups[1].Value;
-                    }
-                    else
-                    {
-                        code.LatestNumber = "***查找失败，请手动验证！***";
-                    }
+                    code.LatestNumber = match.Groups[2].Value;
+                    code.LatestName = retrieveLatestName(code.LatestNumber);
 
+                    return;
                 }
-                // 替代标准无链接（极少情况）
-                matches = Regex.Matches(content, ";被(.+)[替代]{2}");
-                if (matches.Count == 1)
-                {
-                    code.LatestNumber = matches[0].Groups[1].Value;
-                    content = Common.GetData($"http://www.csres.com/s.jsp?keyword={code.LatestNumber}&pageNum=1");
-                    if (Regex.Matches(content, "现行").Count >= 1)
-                    {
 
-                        matches = Regex.Matches(content, "<font color=\"#000000\">(.+)</font>");
-                        code.Name = matches[1].Groups[1].Value;
-                        code.State = CodeState.Expired;
-                        code.TextColor = Brushes.Red;
-
-                        return;
-                    }
-                    else
-                    {
-                        code.LatestNumber = "***查找失败，请手动验证！***";
-                    }
-                }
+                code.LatestNumber = "**自动检索无结果**";
             }
-
-            return;
         }
 
-        public void DealWithIncompletedCodeNumber(CodeEx code, string content)
+        private string retrieveLatestName(string latestNumber)
         {
-            var resuls = Regex.Matches(content, "color=\"#000000\">(.+)</font>");
-            if (resuls.Count < 1)
+            var content = Common.GetData($"http://www.csres.com/s.jsp?keyword={latestNumber}&pageNum=1");
+            var parser = new HtmlParser();
+            var document = parser.ParseDocument(content);
+            var results = document.QuerySelectorAll("thead.th1 font[color=\"#000000\"]");
+            if (results.Length >= 5)
             {
-                code.State = CodeState.NotFound;
-                code.TextColor = Brushes.Blue;
-                return;
-            }
-            else if (resuls.Count >= 2)
-            {
-                code.Number = resuls[0].Groups[1].Value;
-                code.Name = resuls[1].Groups[1].Value;
-                code.State = CodeState.Valid;
-                code.TextColor = Brushes.ForestGreen;
+                return results[1].TextContent;
             }
 
-            return;
+            return string.Empty;
         }
     }
 }

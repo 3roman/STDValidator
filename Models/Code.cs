@@ -25,16 +25,16 @@ namespace STDValidator.Models
         }
         public string Name { get; set; }
         public string LatestNumber { get; set; }
+        public string LatestName { get; set; }
         public CodeState State { get; set; }
 
 
         protected virtual string UnitizeCodeNumber(string codeNumber)
         {
-            var number  = Regex.Replace(codeNumber, "[/／]", string.Empty); // 替换全角半角斜杠
-            number      = number.Replace("_", "-"); // 替换下划线
+            var number  = codeNumber.Replace("／", "/").Replace("_", "-"); 
             number      = Regex.Replace(number, @"(\s|\u3000)+", " "); // 替换两个以上中文或英文空格为一个英文空格
-            number      = number.ToUpper().Trim(); // 转大写
             number = Regex.Replace(number, "[(（].+[)）]", string.Empty); // 去除“2018复审”这类字样
+            number      = number.ToUpper().Trim(); // 转大写
 
             return number;
         }
