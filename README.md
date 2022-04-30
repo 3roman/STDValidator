@@ -8,8 +8,6 @@
    <img src= "https://img.shields.io/github/stars/3roman/stdvalidator" />
 </div>
 
-</div>
-
 本工具用于查询标准有效性，并返回最新替代标准号及标准名。数据来源为某专业网站，在此谢过！
 
 ## 信息输入
