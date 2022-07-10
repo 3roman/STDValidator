@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:s="https://github.com/canton7/Stylet"
-    Title="标准规范有效性验证工具202204   小知识：没想象中快是因为CPU内核不够多，神仙也没辙^_^                          【hangch荣誉出品】"
+    Title="STDValidator"
     Width="800"
     Height="450"
     WindowStartupLocation="CenterScreen"
@@ -60,10 +60,10 @@
                 </ListView.Resources>
                 <ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Click="{s:Action OnMenuCopyLatestNumber}" Header="复制最新标准号" />
-                        <MenuItem Click="{s:Action OnMenuCopyLatestName}" Header="复制最新标准名" />
+                        <MenuItem Click="{s:Action OnMenuBrowse}" Header="浏览目录" />
                         <Separator />
-                        <MenuItem Click="{s:Action OnMenuBrowse}" Header="浏览标准目录" />
+                        <MenuItem Click="{s:Action OnMenuCopyLatestNumber}" Header="复制标准号" />
+                        <MenuItem Click="{s:Action OnMenuCopyLatestName}" Header="复制标准名" />
                         <Separator />
                         <MenuItem Click="{s:Action OnMenuImportFromExcel}" Header="导入Excel" />
                         <MenuItem Click="{s:Action OnMenuExportToExcel}" Header="导出Excel" />

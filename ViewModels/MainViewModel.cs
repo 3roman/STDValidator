@@ -191,7 +191,7 @@ namespace STDValidator.ViewModels
         private void ValidateWorker(CodeEx code)
         {
             // 查询必须把T/替换掉，否则有些查不到
-            var number = code.Number.Replace("T", string.Empty).Replace("/", string.Empty);
+            var number = code.Number.Replace("T", string.Empty).Replace("/", string.Empty).Replace(" ","");
             var content = Common.GetData($"http://www.csres.com/s.jsp?keyword={number}&pageNum=1");
             //Debugger.Log(1, "", $"{number}\n");
 
@@ -203,7 +203,7 @@ namespace STDValidator.ViewModels
 
             var parser = new HtmlParser();
             var document = parser.ParseDocument(content);
-            var results = document.QuerySelectorAll("thead.th1 font[color$=\"0000\"]");
+            var results = document.QuerySelectorAll("thead.th1");
             // 未找到
             if (results.Length == 0)
             {
@@ -214,7 +214,7 @@ namespace STDValidator.ViewModels
             }
             // 有效标准
             results = document.QuerySelectorAll("thead.th1 font[color=\"#000000\"]");
-            if (results.Length == 5)
+            if (results.Length >= 5)
             {
                 code.State = CodeState.Valid;
                 code.TextColor = Brushes.Green;
@@ -233,7 +233,8 @@ namespace STDValidator.ViewModels
                 content = Common.GetData($"http://www.csres.com/{result}");
                 // 有新标准链接信息
                 //var match = Regex.Match(content, "被.+(/detail/.+html).+blank>(.+)</a>(替代|代替){1}");
-                var match = Regex.Match(content, "(被.+blank>|被){1}(.+?)(?=</a>|替代|代替)");
+                //var match = Regex.Match(content, "(被.+blank>|被){1}(.+?)(?=</a>|替代|代替)");
+                var match = Regex.Match(content, "(被.+blank>|被){1}(.+?)(?=</a>替代|</a>代替|替代|代替)");
                 if (match != null && match.Groups.Count == 3)
                 {
                     code.LatestNumber = match.Groups[2].Value;
