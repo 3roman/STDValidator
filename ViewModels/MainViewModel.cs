@@ -3,6 +3,7 @@ using MiniExcelLibs;
 using STDValidator.Models;
 using STDValidator.Utility;
 using Stylet;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media;
+using System.Reflection;
 
 namespace STDValidator.ViewModels
 {
@@ -22,12 +24,41 @@ namespace STDValidator.ViewModels
         public string KeyWord { get; set; } = "DL/T5054-1996";
         private long Scanned;
         public bool CanOnValidate { get; set; }
+        private string SelectedDirectory;
         private readonly IWindowManager _windowsManager;
+        public string AppTitle => "STDValidator" + $"{Assembly.GetExecutingAssembly().GetName().Version.Major}.{Assembly.GetExecutingAssembly().GetName().Version.Minor}.{Assembly.GetExecutingAssembly().GetName().Version.Build}";
 
 
         public MainViewModel(IWindowManager windowManager)
         {
             _windowsManager = windowManager;
+        }
+
+        public void OnMenuBrowse()
+        {
+            SelectedDirectory = Common.SelectDirectory("STDValidator.log");
+            IEnumerable<string> files = Common.EnumrateFiles(SelectedDirectory);
+            if (files == null)
+            {
+                return;
+            }
+
+            foreach (string file in files)
+            {
+                string number = Regex.Match(file, @"([\w／]+\s*[\d.]+[-_]\d+\s*)").Groups[1].Value;
+                if (!string.IsNullOrEmpty(number.Trim()))
+                {
+                    Codes.Add(new CodeEx
+                    {
+                        Name = file.Replace(number, string.Empty),
+                        Number = number,
+                        RawFilePath = file
+                    }); ;
+                }
+            }
+            Scanned = 0;
+            StateMessage = $"待命中：{Scanned}/{Codes.Count}";
+            CanOnValidate = Codes.Count > 0;
         }
 
         public void OnMenuCopyLatestNumber()
@@ -62,31 +93,6 @@ namespace STDValidator.ViewModels
             }
         }
 
-        public void OnMenuBrowse()
-        {
-            var files = Common.BrowseFileName();
-            if (files == null)
-            {
-                return;
-            }
-
-            foreach (var file in files)
-            {
-                var number = Regex.Match(file, @"([\w／]+\s*[\d.]+[-_]\d+\s*)").Groups[1].Value;
-                if (!string.IsNullOrEmpty(number.Trim()))
-                {
-                    Codes.Add(new CodeEx
-                    {
-                        Name = file.Replace(number, string.Empty),
-                        Number = number
-                    });
-                }
-            }
-            Scanned = 0;
-            StateMessage = $"待命中：{Scanned}/{Codes.Count}";
-            CanOnValidate = Codes.Count > 0;
-        }
-
         public void OnMenuImportFromExcel()
         {
             using (var ofd = new OpenFileDialog())
@@ -96,9 +102,9 @@ namespace STDValidator.ViewModels
 
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    using (var stream = File.OpenRead(ofd.FileName))
+                    using (FileStream stream = File.OpenRead(ofd.FileName))
                     {
-                        var rows = stream.Query(); // 返回动态类型
+                        IEnumerable<dynamic> rows = stream.Query(); // 返回动态类型
                         foreach (var row in rows)
                         {
                             Codes.Add(new CodeEx()
@@ -135,7 +141,12 @@ namespace STDValidator.ViewModels
             }
         }
 
-        public void OnAdd()
+        public void OnMenuLocateFile()
+        {
+            Process.Start("Explorer", "/select," + SelectedDirectory + "\\" + SelectedCode.RawFilePath + ".pdf");
+        }
+
+        public void OnButtonAdd()
         {
             if (string.IsNullOrEmpty(KeyWord))
             {
@@ -158,7 +169,7 @@ namespace STDValidator.ViewModels
             CanOnValidate = Codes.Count > 0;
         }
 
-        public void OnClear()
+        public void OnButtonClear()
         {
             Codes.Clear();
             Scanned = 0;
@@ -166,7 +177,7 @@ namespace STDValidator.ViewModels
             CanOnValidate = false;
         }
 
-        public void OnValidate()
+        public void OnButtonValidate()
         {
             // 套一层Task，防止UI线程阻塞
             var currentTask = Task.Run(() =>
@@ -191,7 +202,7 @@ namespace STDValidator.ViewModels
         private void ValidateWorker(CodeEx code)
         {
             // 查询必须把T/替换掉，否则有些查不到
-            var number = code.Number.Replace("T", string.Empty).Replace("/", string.Empty).Replace(" ","");
+            var number = code.Number.Replace("T", string.Empty).Replace("/", string.Empty).Replace(" ", "");
             var content = Common.GetData($"http://www.csres.com/s.jsp?keyword={number}&pageNum=1");
             //Debugger.Log(1, "", $"{number}\n");
 
@@ -238,7 +249,7 @@ namespace STDValidator.ViewModels
                 if (match != null && match.Groups.Count == 3)
                 {
                     code.LatestNumber = match.Groups[2].Value;
-                    code.LatestName = retrieveLatestName(code.LatestNumber);
+                    code.LatestName = RetrieveLatestName(code.LatestNumber);
 
                     return;
                 }
@@ -247,7 +258,7 @@ namespace STDValidator.ViewModels
             }
         }
 
-        private string retrieveLatestName(string latestNumber)
+        private string RetrieveLatestName(string latestNumber)
         {
             var content = Common.GetData($"http://www.csres.com/s.jsp?keyword={latestNumber}&pageNum=1");
             var parser = new HtmlParser();

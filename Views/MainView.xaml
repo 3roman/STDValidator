@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:s="https://github.com/canton7/Stylet"
-    Title="STDValidator"
+    Title="{Binding AppTitle}"
     Width="800"
     Height="450"
     WindowStartupLocation="CenterScreen"
@@ -21,17 +21,17 @@
                     Text="标准号" />
                 <Button
                     Margin="1.5,0,0,0"
-                    Command="{s:Action OnValidate}"
+                    Command="{s:Action OnButtonValidate}"
                     Content="在线验证"
                     DockPanel.Dock="Right" />
                 <Button
                     Margin="1.5,0,0,0"
-                    Command="{s:Action OnClear}"
+                    Command="{s:Action OnButtonClear}"
                     Content="清空列表"
                     DockPanel.Dock="Right" />
                 <Button
                     Margin="1.5,0,0,0"
-                    Command="{s:Action OnAdd}"
+                    Command="{s:Action OnButtonAdd}"
                     Content="手动增加"
                     DockPanel.Dock="Right"
                     IsDefault="True" />
@@ -61,6 +61,7 @@
                 <ListView.ContextMenu>
                     <ContextMenu>
                         <MenuItem Click="{s:Action OnMenuBrowse}" Header="浏览目录" />
+                        <MenuItem Click="{s:Action OnMenuLocateFile}" Header="定位到文件" />
                         <Separator />
                         <MenuItem Click="{s:Action OnMenuCopyLatestNumber}" Header="复制标准号" />
                         <MenuItem Click="{s:Action OnMenuCopyLatestName}" Header="复制标准名" />
