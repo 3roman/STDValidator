@@ -34,33 +34,6 @@ namespace STDValidator.ViewModels
             _windowsManager = windowManager;
         }
 
-        public void OnMenuBrowse()
-        {
-            SelectedDirectory = Common.SelectDirectory("STDValidator.log");
-            IEnumerable<string> files = Common.EnumrateFiles(SelectedDirectory);
-            if (files == null)
-            {
-                return;
-            }
-
-            foreach (string file in files)
-            {
-                string number = Regex.Match(file, @"([\w／]+\s*[\d.]+[-_]\d+\s*)").Groups[1].Value;
-                if (!string.IsNullOrEmpty(number.Trim()))
-                {
-                    Codes.Add(new CodeEx
-                    {
-                        Name = file.Replace(number, string.Empty),
-                        Number = number,
-                        RawFilePath = file
-                    }); ;
-                }
-            }
-            Scanned = 0;
-            StateMessage = $"待命中：{Scanned}/{Codes.Count}";
-            CanOnValidate = Codes.Count > 0;
-        }
-
         public void OnMenuCopyLatestNumber()
         {
             if (SelectedCode == null)
@@ -143,7 +116,34 @@ namespace STDValidator.ViewModels
 
         public void OnMenuLocateFile()
         {
-            Process.Start("Explorer", "/select," + SelectedDirectory + "\\" + SelectedCode.RawFilePath + ".pdf");
+            Process.Start("Explorer", "/select," + SelectedCode.RawFilePath + ".pdf");
+        }
+
+        public void OnButtonBrowse()
+        {
+            SelectedDirectory = Common.SelectDirectory("STDValidator.log");
+            IEnumerable<string> files = Common.EnumrateFiles(SelectedDirectory);
+            if (files == null)
+            {
+                return;
+            }
+
+            foreach (string file in files)
+            {
+                string number = Regex.Match(file, @"([\w／]+\s*[\d.]+[-_]\d+\s*)").Groups[1].Value;
+                if (!string.IsNullOrEmpty(number.Trim()))
+                {
+                    Codes.Add(new CodeEx
+                    {
+                        Name = file.Replace(number, string.Empty),
+                        Number = number,
+                        RawFilePath = Path.Combine(SelectedDirectory, file)
+                    });
+                }
+            }
+            Scanned = 0;
+            StateMessage = $"待命中：{Scanned}/{Codes.Count}";
+            CanOnValidate = Codes.Count > 0;
         }
 
         public void OnButtonAdd()

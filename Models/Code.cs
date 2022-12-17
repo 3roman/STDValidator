@@ -24,7 +24,6 @@ namespace STDValidator.Models
         public string LatestNumber { get; set; }
         public string LatestName { get; set; }
         public CodeState State { get; set; }
-        public string RawFilePath { get; set; }
 
         protected virtual string UnitizeCodeNumber(string codeNumber)
         {
